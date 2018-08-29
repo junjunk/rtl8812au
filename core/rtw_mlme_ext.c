@@ -2635,14 +2635,14 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 	if (_STATS_SUCCESSFUL_ != status)
 		goto OnAssocReqFail;
 
-	pstat->flags &= ~(WLAN_STA_WPS | WLAN_STA_MAYBE_WPS);
+	pstat->flags &= ~(RTW_WLAN_STA_WPS | RTW_WLAN_STA_MAYBE_WPS);
 	/* if (hapd->conf->wps_state && wpa_ie == NULL) { */ /* todo: to check ap if supporting WPS */
 	if (wpa_ie == NULL) {
 		if (elems.wps_ie) {
 			RTW_INFO("STA included WPS IE in "
 				 "(Re)Association Request - assume WPS is "
 				 "used\n");
-			pstat->flags |= WLAN_STA_WPS;
+			pstat->flags |= RTW_WLAN_STA_WPS;
 			/* wpabuf_free(sta->wps_ie); */
 			/* sta->wps_ie = wpabuf_alloc_copy(elems.wps_ie + 4, */
 			/*				elems.wps_ie_len - 4); */
@@ -2650,14 +2650,14 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 			RTW_INFO("STA did not include WPA/RSN IE "
 				 "in (Re)Association Request - possible WPS "
 				 "use\n");
-			pstat->flags |= WLAN_STA_MAYBE_WPS;
+			pstat->flags |= RTW_WLAN_STA_MAYBE_WPS;
 		}
 
 
 		/* AP support WPA/RSN, and sta is going to do WPS, but AP is not ready */
 		/* that the selected registrar of AP is _FLASE */
 		if ((psecuritypriv->wpa_psk > 0)
-		    && (pstat->flags & (WLAN_STA_WPS | WLAN_STA_MAYBE_WPS))) {
+		    && (pstat->flags & (RTW_WLAN_STA_WPS | RTW_WLAN_STA_MAYBE_WPS))) {
 			if (pmlmepriv->wps_beacon_ie) {
 				u8 selected_registrar = 0;
 
@@ -2690,7 +2690,7 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 			RTW_INFO("STA included WPS IE in "
 				 "(Re)Association Request - WPS is "
 				 "used\n");
-			pstat->flags |= WLAN_STA_WPS;
+			pstat->flags |= RTW_WLAN_STA_WPS;
 			copy_len = 0;
 		} else
 			copy_len = ((wpa_ie_len + 2) > sizeof(pstat->wpa_ie)) ? (sizeof(pstat->wpa_ie)) : (wpa_ie_len + 2);
@@ -2703,7 +2703,7 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 
 
 	/* check if there is WMM IE & support WWM-PS */
-	pstat->flags &= ~WLAN_STA_WME;
+	pstat->flags &= ~RTW_WLAN_STA_WME;
 	pstat->qos_option = 0;
 	pstat->qos_info = 0;
 	pstat->has_legacy_ac = _TRUE;
@@ -2719,7 +2719,7 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 			if (p != NULL) {
 				if (_rtw_memcmp(p + 2, WMM_IE, 6)) {
 
-					pstat->flags |= WLAN_STA_WME;
+					pstat->flags |= RTW_WLAN_STA_WME;
 
 					pstat->qos_option = 1;
 					pstat->qos_info = *(p + 8);
@@ -2770,17 +2770,17 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 	/* save HT capabilities in the sta object */
 	_rtw_memset(&pstat->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
 	if (elems.ht_capabilities && elems.ht_capabilities_len >= sizeof(struct rtw_ieee80211_ht_cap)) {
-		pstat->flags |= WLAN_STA_HT;
+		pstat->flags |= RTW_WLAN_STA_HT;
 
-		pstat->flags |= WLAN_STA_WME;
+		pstat->flags |= RTW_WLAN_STA_WME;
 
 		_rtw_memcpy(&pstat->htpriv.ht_cap, elems.ht_capabilities, sizeof(struct rtw_ieee80211_ht_cap));
 
 	} else
-		pstat->flags &= ~WLAN_STA_HT;
+		pstat->flags &= ~RTW_WLAN_STA_HT;
 bypass_ht_chk:
 
-	if ((pmlmepriv->htpriv.ht_option == _FALSE) && (pstat->flags & WLAN_STA_HT)) {
+	if ((pmlmepriv->htpriv.ht_option == _FALSE) && (pstat->flags & RTW_WLAN_STA_HT)) {
 		rtw_warn_on(1);
 		status = _STATS_FAILURE_;
 		goto OnAssocReqFail;
@@ -2793,7 +2793,7 @@ bypass_ht_chk:
 
 	_rtw_memset(&pstat->vhtpriv, 0, sizeof(struct vht_priv));
 	if (elems.vht_capabilities && elems.vht_capabilities_len == 12) {
-		pstat->flags |= WLAN_STA_VHT;
+		pstat->flags |= RTW_WLAN_STA_VHT;
 
 		_rtw_memcpy(pstat->vhtpriv.vht_cap, elems.vht_capabilities, 12);
 
@@ -2802,24 +2802,24 @@ bypass_ht_chk:
 		else /* for Frame without Operating Mode notify ie; default: 80M */
 			pstat->vhtpriv.vht_op_mode_notify = CHANNEL_WIDTH_80;
 	} else
-		pstat->flags &= ~WLAN_STA_VHT;
+		pstat->flags &= ~RTW_WLAN_STA_VHT;
 bypass_vht_chk:
 
-	if ((pmlmepriv->vhtpriv.vht_option == _FALSE) && (pstat->flags & WLAN_STA_VHT)) {
+	if ((pmlmepriv->vhtpriv.vht_option == _FALSE) && (pstat->flags & RTW_WLAN_STA_VHT)) {
 		rtw_warn_on(1);
 		status = _STATS_FAILURE_;
 		goto OnAssocReqFail;
 	}
 #endif /* CONFIG_80211AC_VHT */
 
-	if (((pstat->flags & WLAN_STA_HT) || (pstat->flags & WLAN_STA_VHT)) &&
+	if (((pstat->flags & RTW_WLAN_STA_HT) || (pstat->flags & RTW_WLAN_STA_VHT)) &&
 	    ((pstat->wpa2_pairwise_cipher & WPA_CIPHER_TKIP) ||
 	     (pstat->wpa_pairwise_cipher & WPA_CIPHER_TKIP))) {
 
 		RTW_INFO("(V)HT: " MAC_FMT " tried to use TKIP with (V)HT association\n", MAC_ARG(pstat->hwaddr));
 
-		pstat->flags &= ~WLAN_STA_HT;
-		pstat->flags &= ~WLAN_STA_VHT;
+		pstat->flags &= ~RTW_WLAN_STA_HT;
+		pstat->flags &= ~RTW_WLAN_STA_VHT;
 		/*status = WLAN_STATUS_CIPHER_REJECTED_PER_POLICY;
 		  * goto OnAssocReqFail;
 		*/
@@ -2828,18 +2828,18 @@ bypass_vht_chk:
 
 	/*
 	 * if (hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211G) */ /* ? */
-	pstat->flags |= WLAN_STA_NONERP;
+	pstat->flags |= RTW_WLAN_STA_NONERP;
 	for (i = 0; i < pstat->bssratelen; i++) {
 		if ((pstat->bssrateset[i] & 0x7f) > 22) {
-			pstat->flags &= ~WLAN_STA_NONERP;
+			pstat->flags &= ~RTW_WLAN_STA_NONERP;
 			break;
 		}
 	}
 
 	if (pstat->capability & WLAN_CAPABILITY_SHORT_PREAMBLE)
-		pstat->flags |= WLAN_STA_SHORT_PREAMBLE;
+		pstat->flags |= RTW_WLAN_STA_SHORT_PREAMBLE;
 	else
-		pstat->flags &= ~WLAN_STA_SHORT_PREAMBLE;
+		pstat->flags &= ~RTW_WLAN_STA_SHORT_PREAMBLE;
 
 
 
@@ -8325,7 +8325,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 #endif /* CONFIG_IEEE80211W */
 
 #ifdef CONFIG_80211N_HT
-	if ((pstat->flags & WLAN_STA_HT) && (pmlmepriv->htpriv.ht_option)) {
+	if ((pstat->flags & RTW_WLAN_STA_HT) && (pmlmepriv->htpriv.ht_option)) {
 		uint ie_len = 0;
 
 		/* FILL HT CAP INFO IE */
@@ -8362,7 +8362,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 	}
 
 #ifdef CONFIG_80211AC_VHT
-	if ((pstat->flags & WLAN_STA_VHT) && (pmlmepriv->vhtpriv.vht_option)
+	if ((pstat->flags & RTW_WLAN_STA_VHT) && (pmlmepriv->vhtpriv.vht_option)
 	    && (pstat->wpa_pairwise_cipher != WPA_CIPHER_TKIP)
 	    && (pstat->wpa2_pairwise_cipher != WPA_CIPHER_TKIP)) {
 		u32 ie_len = 0;
@@ -8386,7 +8386,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 #endif /* CONFIG_80211AC_VHT */
 
 	/* FILL WMM IE */
-	if ((pstat->flags & WLAN_STA_WME) && (pmlmepriv->qospriv.qos_option)) {
+	if ((pstat->flags & RTW_WLAN_STA_WME) && (pmlmepriv->qospriv.qos_option)) {
 		uint ie_len = 0;
 		unsigned char WMM_PARA_IE[] = {0x00, 0x50, 0xf2, 0x02, 0x01, 0x01};
 
