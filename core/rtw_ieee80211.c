@@ -1232,7 +1232,7 @@ ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
 			elems->vht_operation = pos;
 			elems->vht_operation_len = elen;
 			break;
-		case WLAN_EID_OPMODE_NOTIFY:
+		case WLAN_EID_OPMODE_NOTIF:
 			elems->vht_op_mode_notify = pos;
 			elems->vht_op_mode_notify_len = elen;
 			break;
