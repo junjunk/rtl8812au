@@ -140,7 +140,7 @@ static struct ieee80211_rate rtw_rates[] = {
 #define RTW_G_RATES_NUM	12
 
 #define RTW_2G_CHANNELS_NUM 14
-#define RTW_5G_CHANNELS_NUM 41
+#define RTW_5G_CHANNELS_NUM 43
 
 static struct ieee80211_channel rtw_2ghz_channels[] = {
 	CHAN2G(1, 2412, 0),
@@ -172,9 +172,11 @@ static struct ieee80211_channel rtw_5ghz_a_channels[] = {
 	CHAN5G(116, 0),		CHAN5G(120, 0),
 	CHAN5G(124, 0),		CHAN5G(128, 0),
 	CHAN5G(132, 0),		CHAN5G(136, 0),
-	CHAN5G(140, 0),		CHAN5G(144, 0),	CHAN5G(149, 0),
-	CHAN5G(153, 0),		CHAN5G(157, 0),
-	CHAN5G(161, 0),		CHAN5G(165, 0), CHAN5G(169, 0),
+	CHAN5G(140, 0),		CHAN5G(144, 0),
+	CHAN5G(149, 0),     CHAN5G(151, 0),
+	CHAN5G(153, 0),		CHAN5G(155, 0),
+	CHAN5G(157, 0),		CHAN5G(161, 0),
+	CHAN5G(165, 0), 	CHAN5G(169, 0),
 	CHAN5G(184, 0),		CHAN5G(188, 0),
 	CHAN5G(192, 0),		CHAN5G(196, 0),
 	CHAN5G(200, 0),		CHAN5G(204, 0),
@@ -1140,7 +1142,7 @@ exit:
 	return ret;
 
 }
-#endif
+#endif /* CONFIG_AP_MODE */
 
 static int rtw_cfg80211_set_encryption(struct net_device *dev, struct ieee_param *param, u32 param_len)
 {
@@ -6253,9 +6255,9 @@ static void rtw_cfg80211_create_vht_cap(_adapter *padapter, struct ieee80211_sta
 			mcs_map |= IEEE80211_VHT_MCS_NOT_SUPPORTED << (i*2);
 	}
 
-	vht_cap->vht_mcs.tx_mcs_map =
+	vht_cap->vht_mcs.tx_mcs_map = cpu_to_le16(mcs_map);
 	vht_cap->vht_mcs.rx_mcs_map = cpu_to_le16(mcs_map);
-	vht_cap->vht_mcs.tx_highest =
+	vht_cap->vht_mcs.tx_highest = cpu_to_le16(highest_rates[pHalData->NumTotalRFPath-1]);
 	vht_cap->vht_mcs.rx_highest = cpu_to_le16(highest_rates[pHalData->NumTotalRFPath-1]);
 #else
 	vht_cap->vht_supported = 0;
