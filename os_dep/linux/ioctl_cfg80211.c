@@ -3810,7 +3810,11 @@ static int cfg80211_rtw_del_virtual_intf(struct wiphy *wiphy,
 	adapter = (_adapter *)rtw_netdev_priv(ndev);
 	pwdev_priv = adapter_wdev_data(adapter);
 
-	unregister_netdevice(ndev);
+	/* unregister only monitor device
+	 * because only monitor can be added
+	 */
+	if(wdev->iftype == NL80211_IFTYPE_MONITOR)
+		unregister_netdevice(ndev);
 
 	if (ndev == pwdev_priv->pmon_ndev) {
 		pwdev_priv->pmon_ndev = NULL;
