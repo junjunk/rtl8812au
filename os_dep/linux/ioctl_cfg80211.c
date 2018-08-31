@@ -4262,27 +4262,32 @@ static int	cfg80211_rtw_change_bss(struct wiphy *wiphy, struct net_device *ndev,
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-/* TODO: 80 and 160 MHz bandwidth */
+/* TODO: 160 MHz bandwidth */
 static int	cfg80211_rtw_set_monitor_channel(struct wiphy *wiphy, struct cfg80211_chan_def *chandef)
 {
 	int chan_target = (u8) ieee80211_frequency_to_channel(chandef->chan->center_freq);
 	int chan_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
 	int chan_width = CHANNEL_WIDTH_20;
-	enum nl80211_channel_type channel_type = cfg80211_get_chandef_type(chandef);
 	_adapter *padapter = wiphy_to_adapter(wiphy);
-	switch (channel_type) {
-	case NL80211_CHAN_NO_HT:
-	case NL80211_CHAN_HT20:
+	switch (chandef->width) {
+	case NL80211_CHAN_WIDTH_20_NOHT:
+	case NL80211_CHAN_WIDTH_20:
 		chan_width = CHANNEL_WIDTH_20;
 		chan_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
 		break;
-	case NL80211_CHAN_HT40MINUS:
+	case NL80211_CHAN_WIDTH_40:
 		chan_width = CHANNEL_WIDTH_40;
-		chan_offset = HAL_PRIME_CHNL_OFFSET_UPPER;
+		if (chandef->center_freq1 > chandef->chan->center_freq)
+			chan_offset = HAL_PRIME_CHNL_OFFSET_LOWER;
+		else
+			chan_offset = HAL_PRIME_CHNL_OFFSET_UPPER;
 		break;
-	case NL80211_CHAN_HT40PLUS:
-		chan_width = CHANNEL_WIDTH_40;
-		chan_offset = HAL_PRIME_CHNL_OFFSET_LOWER;
+	case NL80211_CHAN_WIDTH_80:
+		chan_width = CHANNEL_WIDTH_80;
+		if (chandef->center_freq1 > chandef->chan->center_freq)
+			chan_offset = HAL_PRIME_CHNL_OFFSET_LOWER;
+		else
+			chan_offset = HAL_PRIME_CHNL_OFFSET_UPPER;
 		break;
 	default:
 		chan_width = CHANNEL_WIDTH_20;
@@ -4290,7 +4295,7 @@ static int	cfg80211_rtw_set_monitor_channel(struct wiphy *wiphy, struct cfg80211
 		break;
 	}
 	set_channel_bwmode(padapter, chan_target, chan_offset, chan_width);
-	DBG_871X("%s : %d %d", __func__, chan_target, chan_width);
+	DBG_871X("%s : %d %d %d\n", __func__, chan_target, chan_offset, chan_width);
 	return 0;
 }
 #endif
@@ -4331,6 +4336,7 @@ static int	cfg80211_rtw_set_channel(struct wiphy *wiphy
 	}
 
 	set_channel_bwmode(padapter, chan_target, chan_offset, chan_width);
+	DBG_871X("%s : %d %d %d\n", __func__, chan_target, chan_offset, chan_width);
 
 	return 0;
 }
