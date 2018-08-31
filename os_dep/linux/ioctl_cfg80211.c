@@ -4303,7 +4303,7 @@ static int	cfg80211_rtw_set_channel(struct wiphy *wiphy
 	}
 
 	set_channel_bwmode(padapter, chan_target, chan_offset, chan_width);
-	DBG_871X("%s : %d %d %d\n", __func__, chan_target, chan_offset, chan_width);
+	RTW_INFO("%s : %d %d %d\n", __func__, chan_target, chan_offset, chan_width);
 
 	return 0;
 }
